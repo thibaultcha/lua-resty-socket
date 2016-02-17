@@ -40,7 +40,7 @@ function luasocket_mt:__index(key)
 end
 
 
---- LuaSocket/ngx_lua compat
+--- LuaSocket <-> ngx_lua compat
 
 function luasocket_mt.getreusedtimes()
   return 0
@@ -53,6 +53,39 @@ end
 function luasocket_mt:setkeepalive()
   self.sock:close()
   return true
+end
+
+--- Perform SSL handshake.
+-- Mimics the ngx_lua `sslhandshake()` signature with an additional argument
+-- to specify the certificate authority file since ngx_lua won't allow us to
+-- retrieve the configuration value.
+function luasocket_mt:sslhandshake(reused_session, _, verify, cafile)
+  local return_bool = reused_session == false
+
+  local ssl = require "ssl"
+  local params = {
+    mode = "client",
+    protocol = "tlsv1",
+    key = nil,
+    certificate = nil,
+    cafile = cafile,
+    verify = verify and "peer" or "none",
+    options = "all"
+  }
+
+  local ssl_sock, err = ssl.wrap(self.sock, params)
+  if err then
+    return return_bool and false or nil, err
+  end
+
+  local ok, err = ssl_sock:dohandshake()
+  if not ok then
+    return return_bool and false or nil, err
+  end
+
+  self.sock = ssl_sock
+
+  return return_bool and true or ssl_sock
 end
 
 --- Module
