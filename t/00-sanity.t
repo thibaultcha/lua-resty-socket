@@ -87,8 +87,9 @@ qr/\[warn\].*?no support for cosockets in this context, falling back on LuaSocke
             local sock = socket.tcp()
 
             local ok, err = sock:connect("127.0.0.1", $TEST_NGINX_SERVER_PORT)
-            if not ok then
+            if ok ~= 1 then
                 ngx.log(ngx.ERR, "could not connect: "..err)
+                ngx.exit(500)
             end
 
             local bytes, err = sock:send "GET /get HTTP/1.1\r\nHost: localhost\r\n\r\n"
@@ -126,18 +127,21 @@ HTTP/1.1 201 Created
             local sock = socket.tcp()
 
             local ok, err = sock:connect("google.com", 80)
-            if not ok then
+            if ok ~= 1 then
                 ngx.log(ngx.ERR, "could not connect: "..err)
+                return
             end
 
             local bytes, err = sock:send "GET / HTTP/1.1\r\n\r\n"
             if not bytes then
                 ngx.log(ngx.ERR, "could not send: "..err)
+                return
             end
 
             local res, err = sock:receive "*l"
             if not res then
                 ngx.log(ngx.ERR, "could not receive: "..err)
+                return
             end
 
             print(res)

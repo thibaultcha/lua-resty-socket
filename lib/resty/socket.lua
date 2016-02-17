@@ -43,11 +43,6 @@ end
 
 --- LuaSocket <-> ngx_lua compat
 
-function luasocket_mt:connect(...)
-  local res, err = self.sock:connect(...)
-  return res == 1, err
-end
-
 function luasocket_mt.getreusedtimes()
   return 0
 end

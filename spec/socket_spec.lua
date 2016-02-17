@@ -8,7 +8,7 @@ describe("resty.socket", function()
 
     local ok, err = sock:connect("google.com", 80)
     assert.falsy(err)
-    assert.True(ok)
+    assert.equal(1, ok)
 
     local bytes, err = sock:send "HEAD / HTTP/1.1\r\n\r\n"
     assert.falsy(err)
@@ -30,7 +30,7 @@ describe("resty.socket", function()
 
       local ok, err = sock:connect("google.com", 80)
       assert.falsy(err)
-      assert.True(ok)
+      assert.equal(1, ok)
 
       sock:setkeepalive()
 
