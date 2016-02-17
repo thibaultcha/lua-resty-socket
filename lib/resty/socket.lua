@@ -1,4 +1,4 @@
-local get_phase, ngx_socket, has_cosocket, log
+local get_phase, ngx_socket, has_cosocket, log, warn
 
 --- ngx_lua utils
 
@@ -6,6 +6,7 @@ if ngx ~= nil then
   get_phase = ngx.get_phase
   ngx_socket = ngx.socket
   log = ngx.log
+  warn = ngx.WARN
   has_cosocket = function()
     local phase = get_phase()
     return phase == "rewrite" or phase == "access"
@@ -41,6 +42,11 @@ end
 
 
 --- LuaSocket <-> ngx_lua compat
+
+function luasocket_mt:connect(...)
+  local res, err = self.sock:connect(...)
+  return res == 1, err
+end
 
 function luasocket_mt.getreusedtimes()
   return 0
@@ -95,7 +101,7 @@ return {
     if has_cosocket() then
       return ngx_socket.tcp(...)
     else
-      log(ngx.WARN, "no support for cosockets in this context, falling back on LuaSocket")
+      log(warn, "no support for cosockets in this context, falling back on LuaSocket")
 
       local socket = require "socket"
 
