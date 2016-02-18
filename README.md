@@ -1,4 +1,4 @@
-# lua-resty-socket
+# lua-resty-socket ![Module Version][badge-version-image] [![Build Status][badge-travis-image]][badge-travis-url]
 
 A module to reconcile [ngx_lua]'s cosockets and LuaSocket.
 
@@ -49,3 +49,8 @@ $ luarocks install lua-resty-socket
 ```
 
 [ngx_lua]: https://github.com/openresty/lua-nginx-module
+
+[badge-travis-url]: https://travis-ci.org/thibaultCha/lua-resty-socket
+[badge-travis-image]: https://travis-ci.org/thibaultCha/lua-resty-socket.svg?branch=master
+
+[badge-version-image]: https://img.shields.io/badge/version-0.0.1-blue.svg?style=flat

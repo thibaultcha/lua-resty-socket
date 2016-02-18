@@ -36,12 +36,14 @@ reused: 0
 
 
 === TEST 2: luasocket settimeout() compat (ms to seconds conversion)
+--- wait: 2
 --- http_config eval
 "$t::Utils::HttpConfig"
 --- config
     location /get {
         content_by_lua_block {
             ngx.sleep(2)
+            ngx.say "ok"
         }
     }
 
@@ -52,7 +54,7 @@ reused: 0
             local socket = require "resty.socket"
             local sock = socket.tcp()
             sock:settimeout(1000) -- should be translated to 1 for LuaSocket
-            local ok, err = sock:connect("127.0.0.1", $TEST_NGINX_SERVER_PORT)
+            local ok, err = sock:connect("localhost", $TEST_NGINX_SERVER_PORT)
             if not ok then
                 ngx.log(ngx.ERR, "could not connect: "..err)
                 return
@@ -64,10 +66,12 @@ reused: 0
                 return
             end
 
-            local res, err = sock:receive "*l"
-            if not res then
-                print("could not receive: "..err)
-            end
+            ngx.timer.at(1, function()
+                local res, err = sock:receive "*l"
+                if not res then
+                    print("could not receive: "..err)
+                end
+            end)
         }
     }
 --- request
@@ -142,7 +146,7 @@ could not send after keepalive: closed
         log_by_lua_block {
             local socket = require "resty.socket"
             local sock = socket.tcp()
-            local ok, err = sock:connect("www.google.com", 443)
+            local ok, err = sock:connect("google.com", 443)
             if not ok then
                 ngx.log(ngx.ERR, "could not connect: "..err)
                 return
