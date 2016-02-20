@@ -58,18 +58,18 @@ end
 
 --- Perform SSL handshake.
 -- Mimics the ngx_lua `sslhandshake()` signature with an additional argument
--- to specify the certificate authority file since ngx_lua won't allow us to
--- retrieve the configuration value.
-function luasocket_mt:sslhandshake(reused_session, _, verify, cafile)
+-- to specify other SSL options for plain Lua.
+function luasocket_mt:sslhandshake(reused_session, _, verify, luasec_opts)
+  luasec_opts = luasec_opts or {}
   local return_bool = reused_session == false
 
   local ssl = require "ssl"
   local params = {
     mode = "client",
     protocol = "tlsv1",
-    key = nil,
-    certificate = nil,
-    cafile = cafile,
+    key = luasec_opts.key,
+    certificate = luasec_opts.certificate,
+    cafile = luasec_opts.ca,
     verify = verify and "peer" or "none",
     options = "all"
   }
