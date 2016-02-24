@@ -4,7 +4,7 @@ use t::Utils;
 
 repeat_each(1);
 
-plan tests => repeat_each() * (blocks() * 4 + 2);
+plan tests => repeat_each() * (blocks() * 5 + 2);
 
 run_tests();
 
@@ -27,6 +27,7 @@ GET /t
 --- response_body
 
 --- no_error_log
+[warn]
 [error]
 --- error_log
 is fallback: true
@@ -53,6 +54,7 @@ GET /t
 [error]
 --- error_log
 is fallback: true
+no support for cosockets in this context, falling back on LuaSocket
 
 
 
@@ -77,6 +79,7 @@ ok
 [error]
 --- error_log
 is fallback: true
+no support for cosockets in this context, falling back on LuaSocket
 
 
 
@@ -100,6 +103,7 @@ GET /t
 ok
 --- no_error_log
 [error]
+[warn]
 --- error_log
 is fallback: false
 
@@ -122,6 +126,7 @@ GET /t
 --- response_body
 ok
 --- no_error_log
+[warn]
 [error]
 --- error_log
 is fallback: false
@@ -145,6 +150,7 @@ GET /t
 --- response_body
 ok
 --- no_error_log
+[warn]
 [error]
 --- error_log
 is fallback: false
@@ -172,6 +178,7 @@ GET /t
 [error]
 --- error_log
 is fallback: true
+no support for cosockets in this context, falling back on LuaSocket
 
 
 
@@ -196,6 +203,7 @@ GET /t
 [error]
 --- error_log
 is fallback: true
+no support for cosockets in this context, falling back on LuaSocket
 
 
 
@@ -220,6 +228,7 @@ GET /t
 [error]
 --- error_log
 is fallback: true
+no support for cosockets in this context, falling back on LuaSocket
 
 
 
@@ -243,6 +252,7 @@ GET /t
 --- response_body
 
 --- no_error_log
+[warn]
 [error]
 --- error_log
 is fallback: false
@@ -273,6 +283,7 @@ GET /t
 is fallback in init: true
 is fallback in content: false
 --- no_error_log
+[warn]
 [error]
 
 
@@ -301,5 +312,6 @@ GET /t
 --- error_log
 is fallback in content: false
 is fallback in header_filter: true
+no support for cosockets in this context, falling back on LuaSocket
 --- no_error_log
 [error]

@@ -1,8 +1,8 @@
 package = "lua-resty-socket"
-version = "0.0.1-0"
+version = "0.0.2-0"
 source = {
   url = "git://github.com/thibaultCha/lua-resty-socket",
-  tag = "0.0.1"
+  tag = "0.0.2"
 }
 description = {
   summary = "A module offering interoperability between the LuaSocket and cosocket APIs",
