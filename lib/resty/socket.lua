@@ -107,5 +107,5 @@ return {
     }, luasocket_mt)
   end,
   luasocket_mt = luasocket_mt,
-  _VERSION = "0.0.1"
+  _VERSION = "0.0.2"
 }

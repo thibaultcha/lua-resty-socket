@@ -23,7 +23,7 @@ __DATA__
 --- request
 GET /t
 --- response_body
-0.0.1
+0.0.2
 --- no_error_log
 [error]
 
