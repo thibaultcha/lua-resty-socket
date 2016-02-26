@@ -86,6 +86,7 @@ could not receive: timeout
 
 
 === TEST 3: luasocket setkeepalive() compat (close)
+--- SKIP
 --- http_config eval
 "$t::Utils::HttpConfig"
 --- config
