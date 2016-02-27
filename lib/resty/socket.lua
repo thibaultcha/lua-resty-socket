@@ -1,7 +1,7 @@
 local get_phase, ngx_socket, has_cosocket, log, warn
-local type = type
-local rawget = rawget
 local setmetatable = setmetatable
+local rawget = rawget
+local type = type
 
 --- ngx_lua utils
 
@@ -107,5 +107,5 @@ return {
     }, luasocket_mt)
   end,
   luasocket_mt = luasocket_mt,
-  _VERSION = "0.0.2"
+  _VERSION = "0.0.3"
 }

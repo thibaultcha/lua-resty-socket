@@ -2,15 +2,12 @@ package = "lua-resty-socket"
 version = "0.0.2-0"
 source = {
   url = "git://github.com/thibaultCha/lua-resty-socket",
-  tag = "0.0.2"
+  tag = "0.0.3"
 }
 description = {
-  summary = "A module offering interoperability between the LuaSocket and cosocket APIs",
+  summary = "Graceful fallback to LuaSocket for ngx_lua",
   homepage = "http://thibaultcha.github.io/lua-resty-socket",
   license = "MIT"
-}
-dependencies = {
-
 }
 build = {
   type = "builtin",

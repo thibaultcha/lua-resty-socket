@@ -1,6 +1,6 @@
 # lua-resty-socket ![Module Version][badge-version-image] [![Build Status][badge-travis-image]][badge-travis-url]
 
-A module to reconcile [ngx_lua]'s cosockets and LuaSocket.
+Graceful fallback to LuaSocket for [ngx_lua].
 
 **Important note**: The use of LuaSocket inside ngx_lua is **strongly** discouraged due to the blocking nature of LuaSocket's `receive`. However, it does come handy at certain times when one is developing a lua-resty module and wants it to run in contexts that do not support cosockets (such as `init`). This module allows for a better compatibility between the APIs of both implementations, and should be used wisely.
 
@@ -24,23 +24,19 @@ local sock = socket.tcp()
 local is_luasocket = getmetatable(sock) == socket.luasocket_mt -- depends on surrounding context
 
 local times, err = sock:getreusedtimes() -- 0 if underlying socket is LuaSocket
--- ...
 
 sock:settimeout(1000) -- converted to seconds if LuaSocket
 
 local ok, err = sock:connect(host, port)
--- ...
 
 local ok, err = sock:sslhandshake(false, nil, false) -- cosocket signature, will use LuaSec if LuaSocket
--- ...
 
 local ok, err = sock:setkeepalive() -- close() if LuaSocket
--- ...
 ```
 
 ## Installation
 
-This module is mainly intended to be copied and tweaked in a lua-resty library if its author is mad enough.
+This module is mainly intended to be copied in a lua-resty library and eventually modified to one's needs (such as desired supported contexts).
 
 It can also be installed via LuaRocks:
 
@@ -53,4 +49,4 @@ $ luarocks install lua-resty-socket
 [badge-travis-url]: https://travis-ci.org/thibaultCha/lua-resty-socket
 [badge-travis-image]: https://travis-ci.org/thibaultCha/lua-resty-socket.svg?branch=master
 
-[badge-version-image]: https://img.shields.io/badge/version-0.0.2-blue.svg?style=flat
+[badge-version-image]: https://img.shields.io/badge/version-0.0.3-blue.svg?style=flat
