@@ -49,4 +49,4 @@ $ luarocks install lua-resty-socket
 [badge-travis-url]: https://travis-ci.org/thibaultCha/lua-resty-socket
 [badge-travis-image]: https://travis-ci.org/thibaultCha/lua-resty-socket.svg?branch=master
 
-[badge-version-image]: https://img.shields.io/badge/version-0.0.3-blue.svg?style=flat
+[badge-version-image]: https://img.shields.io/badge/version-0.0.4-blue.svg?style=flat

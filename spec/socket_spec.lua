@@ -40,7 +40,7 @@ describe("resty.socket", function()
   end)
 
   it("expose metadata", function()
-    assert.equal("0.0.3", socket._VERSION)
+    assert.equal("0.0.4", socket._VERSION)
     assert.is_table(socket.luasocket_mt)
   end)
 end)
