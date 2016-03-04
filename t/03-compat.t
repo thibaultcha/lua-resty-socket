@@ -85,7 +85,33 @@ could not receive: timeout
 
 
 
-=== TEST 3: luasocket setkeepalive() compat (close)
+=== TEST 3: luasocket settimeout() nil
+--- wait: 1
+--- http_config eval
+"$t::Utils::HttpConfig"
+--- config
+    location /t {
+        return 200;
+
+        log_by_lua_block {
+            local socket = require "resty.socket"
+            local sock = socket.tcp()
+            sock:settimeout() -- no errors
+            ngx.log(ngx.INFO, "ok")
+        }
+    }
+--- request
+GET /t
+--- response_body
+
+--- no_error_log
+[error]
+--- error_log
+ok
+
+
+
+=== TEST 4: luasocket setkeepalive() compat (close)
 --- wait: 1
 --- http_config eval
 "$t::Utils::HttpConfig"
@@ -137,7 +163,7 @@ could not send after keepalive: closed
 
 
 
-=== TEST 4: luasocket sslhandshake() compat
+=== TEST 5: luasocket sslhandshake() compat
 --- http_config eval
 "$t::Utils::HttpConfig"
 --- config
