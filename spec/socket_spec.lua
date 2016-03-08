@@ -7,15 +7,15 @@ describe("resty.socket", function()
     assert.is_table(getmetatable(sock))
 
     local ok, err = sock:connect("google.com", 80)
-    assert.falsy(err)
+    assert.is_nil(err)
     assert.equal(1, ok)
 
     local bytes, err = sock:send "HEAD / HTTP/1.1\r\n\r\n"
-    assert.falsy(err)
+    assert.is_nil(err)
     assert.is_number(bytes)
 
     local res, err = sock:receive "*l"
-    assert.falsy(err)
+    assert.is_nil(err)
     assert.equal("HTTP/1.1 200 OK", res)
 
     finally(function()
@@ -29,7 +29,7 @@ describe("resty.socket", function()
       assert.truthy(sock)
 
       local ok, err = sock:connect("google.com", 80)
-      assert.falsy(err)
+      assert.is_nil(err)
       assert.equal(1, ok)
 
       sock:setkeepalive()

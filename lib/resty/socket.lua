@@ -78,16 +78,17 @@ function luasocket_mt:sslhandshake(reused_session, _, verify, opts)
     options = "all"
   }
 
-  local err
-  self.sock, err = ssl.wrap(self.sock, params)
-  if not self.sock then
+  local sock, err = ssl.wrap(self.sock, params)
+  if not sock then
     return return_bool and false or nil, err
   end
 
-  local ok, err = self.sock:dohandshake()
+  local ok, err = sock:dohandshake()
   if not ok then
     return return_bool and false or nil, err
   end
+
+  self.sock = sock
 
   return return_bool and true or self
 end
