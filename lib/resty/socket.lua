@@ -33,12 +33,14 @@ function luasocket_mt:__index(key)
 
   local orig = self.sock[key]
   if type(orig) == "function" then
-    return function(_, ...)
+    local f = function(_, ...)
       return orig(self.sock, ...)
     end
+    self[key] = f
+    return f
+  else
+    return orig
   end
-
-  return orig
 end
 
 
@@ -86,6 +88,13 @@ function luasocket_mt:sslhandshake(reused_session, _, verify, opts)
   local ok, err = sock:dohandshake()
   if not ok then
     return return_bool and false or nil, err
+  end
+
+  -- purge memoized closures
+  for k, v in pairs(self) do
+    if type(v) == "function" then
+      self[k] = nil
+    end
   end
 
   self.sock = sock

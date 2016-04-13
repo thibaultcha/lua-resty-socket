@@ -71,14 +71,12 @@ qr/\[warn\].*?no support for cosockets in this context, falling back on LuaSocke
 
 
 
-=== TEST 4: cosocket behavior
+=== TEST 4: cosocket sanity
 --- http_config eval
 "$t::Utils::HttpConfig"
 --- config
-    location /get {
-        content_by_lua_block {
-            ngx.status = 201
-        }
+    location /post {
+        return 201;
     }
 
     location /t {
@@ -92,7 +90,7 @@ qr/\[warn\].*?no support for cosockets in this context, falling back on LuaSocke
                 ngx.exit(500)
             end
 
-            local bytes, err = sock:send "GET /get HTTP/1.1\r\nHost: localhost\r\n\r\n"
+            local bytes, err = sock:send "POST /post HTTP/1.1\r\nHost: localhost\r\n\r\n"
             if not bytes then
                 ngx.log(ngx.ERR, "could not send: "..err)
             end
@@ -114,7 +112,7 @@ HTTP/1.1 201 Created
 
 
 
-=== TEST 5: luasocket fallback behavior
+=== TEST 5: luasocket fallback sanity
 --- wait: 1
 --- http_config eval
 "$t::Utils::HttpConfig"
