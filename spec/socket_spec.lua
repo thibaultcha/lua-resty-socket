@@ -1,46 +1,40 @@
-local socket = require "lib.resty.socket"
+local socket = require 'lib.resty.socket'
 
-describe("resty.socket", function()
-  it("fallback on LuaSocket outside of ngx_lua", function()
-    local sock = socket.tcp()
-    assert.truthy(sock)
+describe('resty.socket', function()
+  it('fallbacks on LuaSocket outside of ngx_lua', function()
+    local sock = assert(socket.tcp())
     assert.is_table(getmetatable(sock))
-
-    local ok, err = sock:connect("google.com", 80)
-    assert.is_nil(err)
-    assert.equal(1, ok)
-
-    local bytes, err = sock:send "HEAD / HTTP/1.1\r\n\r\n"
-    assert.is_nil(err)
-    assert.is_number(bytes)
-
-    local res, err = sock:receive "*l"
-    assert.is_nil(err)
-    assert.equal("HTTP/1.1 200 OK", res)
 
     finally(function()
       sock:close()
     end)
+
+    local ok = assert(sock:connect('www.google.com', 80))
+    assert.equal(1, ok)
+
+    local bytes = assert(sock:send('HEAD / HTTP/1.1\r\nHost: www.google.com\r\nConnection: close\r\n\r\n'))
+    assert.is_number(bytes)
+
+    local status = assert(sock:receive())
+    assert.equal("HTTP/1.1 200 OK", status)
   end)
 
-  describe("setkeepalive()", function()
-    it("call close()", function()
-      local sock = socket.tcp()
-      assert.truthy(sock)
+  describe('setkeepalive()', function()
+    it('calls close()', function()
+      local sock = assert(socket.tcp())
 
-      local ok, err = sock:connect("google.com", 80)
-      assert.is_nil(err)
+      local ok = assert(sock:connect('www.google.com', 80))
       assert.equal(1, ok)
 
       sock:setkeepalive()
 
-      local _, err = sock:send "HEAD / HTTP/1.1\r\n\r\n"
+      local _, err = sock:send('HEAD / HTTP/1.1\r\nHost: www.google.com\r\nConnection: close\r\n\r\n')
       assert.equal("closed", err)
     end)
   end)
 
-  it("expose metadata", function()
-    assert.equal("0.0.4", socket._VERSION)
+  it('exposes metadata', function()
+    assert.matches('%d.%d.%d', socket._VERSION)
     assert.is_table(socket.luasocket_mt)
   end)
 end)

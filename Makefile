@@ -2,7 +2,7 @@
 
 test:
 		@busted -v -o gtest
-		@util/reindex t/*.t
+		@t/reindex t/*.t
 		@prove
 
 lint:

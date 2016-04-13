@@ -1,10 +1,11 @@
 # vim:set ts=4 sw=4 et fdm=marker:
 use Test::Nginx::Socket::Lua;
-use t::Utils;
 
-repeat_each(1);
+our $HttpConfig = <<_EOC_;
+    lua_package_path 'lib/?.lua;;';
+_EOC_
 
-plan tests => repeat_each() * (blocks() * 5 + 2);
+plan tests => repeat_each() * (blocks() * 5);
 
 run_tests();
 
@@ -12,11 +13,11 @@ __DATA__
 
 === TEST 1: luasocket in init
 --- http_config eval
-"$t::Utils::HttpConfig
+"$::HttpConfig
 init_by_lua_block {
     local socket = require 'resty.socket'
     local sock = socket.tcp()
-    print('is fallback: '..tostring(getmetatable(sock) == socket.luasocket_mt))
+    print('is fallback: ', getmetatable(sock) == socket.luasocket_mt)
 }"
 --- config
     location /t {
@@ -36,11 +37,11 @@ is fallback: true
 
 === TEST 2: luasocket in init_worker
 --- http_config eval
-"$t::Utils::HttpConfig
+"$::HttpConfig
 init_worker_by_lua_block {
     local socket = require 'resty.socket'
     local sock = socket.tcp()
-    print('is fallback: '..tostring(getmetatable(sock) == socket.luasocket_mt))
+    print('is fallback: ', getmetatable(sock) == socket.luasocket_mt)
 }"
 --- config
     location /t {
@@ -59,15 +60,14 @@ no support for cosockets in this context, falling back on LuaSocket
 
 
 === TEST 3: luasocket in set
---- http_config eval
-"$t::Utils::HttpConfig"
+--- http_config eval: $::HttpConfig
 --- config
     location /t {
         set_by_lua_block $res {
             local socket = require 'resty.socket'
             local sock = socket.tcp()
-            print('is fallback: '..tostring(getmetatable(sock) == socket.luasocket_mt))
-            return "ok"
+            print('is fallback: ', getmetatable(sock) == socket.luasocket_mt)
+            return 'ok'
         }
         echo $res;
     }
@@ -84,15 +84,14 @@ no support for cosockets in this context, falling back on LuaSocket
 
 
 === TEST 4: cosocket in rewrite
---- http_config eval
-"$t::Utils::HttpConfig"
+--- http_config eval: $::HttpConfig
 --- config
     location /t {
         set $res "";
         rewrite_by_lua_block {
             local socket = require 'resty.socket'
             local sock = socket.tcp()
-            print('is fallback: '..tostring(getmetatable(sock) == socket.luasocket_mt))
+            print('is fallback: ', getmetatable(sock) == socket.luasocket_mt)
             ngx.var.res = "ok"
         }
         echo $res;
@@ -110,56 +109,47 @@ is fallback: false
 
 
 === TEST 5: cosocket in access
---- http_config eval
-"$t::Utils::HttpConfig"
+--- http_config eval: $::HttpConfig
 --- config
     location /t {
         access_by_lua_block {
             local socket = require 'resty.socket'
             local sock = socket.tcp()
-            print('is fallback: '..tostring(getmetatable(sock) == socket.luasocket_mt))
-            ngx.say "ok"
+            ngx.say('is fallback: ', getmetatable(sock) == socket.luasocket_mt)
         }
     }
 --- request
 GET /t
 --- response_body
-ok
+is fallback: false
 --- no_error_log
 [warn]
 [error]
---- error_log
-is fallback: false
 
 
 
 === TEST 6: cosocket in content
---- http_config eval
-"$t::Utils::HttpConfig"
+--- http_config eval: $::HttpConfig
 --- config
     location /t {
         content_by_lua_block {
             local socket = require 'resty.socket'
             local sock = socket.tcp()
-            print('is fallback: '..tostring(getmetatable(sock) == socket.luasocket_mt))
-            ngx.say "ok"
+            ngx.say('is fallback: ', getmetatable(sock) == socket.luasocket_mt)
         }
     }
 --- request
 GET /t
 --- response_body
-ok
+is fallback: false
 --- no_error_log
 [warn]
 [error]
---- error_log
-is fallback: false
 
 
 
 === TEST 7: luasocket in header_filter
---- http_config eval
-"$t::Utils::HttpConfig"
+--- http_config eval: $::HttpConfig
 --- config
     location /t {
         return 200;
@@ -167,7 +157,7 @@ is fallback: false
         header_filter_by_lua_block {
             local socket = require 'resty.socket'
             local sock = socket.tcp()
-            print('is fallback: '..tostring(getmetatable(sock) == socket.luasocket_mt))
+            print('is fallback: ', getmetatable(sock) == socket.luasocket_mt)
         }
     }
 --- request
@@ -183,8 +173,7 @@ no support for cosockets in this context, falling back on LuaSocket
 
 
 === TEST 8: luasocket in body_filter
---- http_config eval
-"$t::Utils::HttpConfig"
+--- http_config eval: $::HttpConfig
 --- config
     location /t {
         return 200;
@@ -192,7 +181,7 @@ no support for cosockets in this context, falling back on LuaSocket
         body_filter_by_lua_block {
             local socket = require 'resty.socket'
             local sock = socket.tcp()
-            print('is fallback: '..tostring(getmetatable(sock) == socket.luasocket_mt))
+            print('is fallback: ', getmetatable(sock) == socket.luasocket_mt)
         }
     }
 --- request
@@ -208,8 +197,7 @@ no support for cosockets in this context, falling back on LuaSocket
 
 
 === TEST 9: luasocket in log
---- http_config eval
-"$t::Utils::HttpConfig"
+--- http_config eval: $::HttpConfig
 --- config
     location /t {
         return 200;
@@ -217,7 +205,7 @@ no support for cosockets in this context, falling back on LuaSocket
         log_by_lua_block {
             local socket = require 'resty.socket'
             local sock = socket.tcp()
-            print('is fallback: '..tostring(getmetatable(sock) == socket.luasocket_mt))
+            print('is fallback: ', getmetatable(sock) == socket.luasocket_mt)
         }
     }
 --- request
@@ -233,8 +221,7 @@ no support for cosockets in this context, falling back on LuaSocket
 
 
 === TEST 10: cosocket in timer
---- http_config eval
-"$t::Utils::HttpConfig"
+--- http_config eval: $::HttpConfig
 --- config
     location /t {
         return 200;
@@ -243,7 +230,7 @@ no support for cosockets in this context, falling back on LuaSocket
             ngx.timer.at(0, function()
                 local socket = require 'resty.socket'
                 local sock = socket.tcp()
-                print('is fallback: '..tostring(getmetatable(sock) == socket.luasocket_mt))
+                print('is fallback: ', getmetatable(sock) == socket.luasocket_mt)
             end)
         }
     }
@@ -261,18 +248,18 @@ is fallback: false
 
 === TEST 11: fallback in non-supported contexts only
 --- http_config eval
-"$t::Utils::HttpConfig
+"$::HttpConfig
 init_by_lua_block {
     local socket = require 'resty.socket'
     local sock = socket.tcp()
-    print('is fallback in init: '..tostring(getmetatable(sock) == socket.luasocket_mt))
+    print('is fallback in init: ', getmetatable(sock) == socket.luasocket_mt)
 }"
 --- config
     location /t {
         content_by_lua_block {
             local socket = require 'resty.socket'
             local sock = socket.tcp()
-            print('is fallback in content: '..tostring(getmetatable(sock) == socket.luasocket_mt))
+            print('is fallback in content: ', getmetatable(sock) == socket.luasocket_mt)
         }
     }
 --- request
@@ -289,20 +276,19 @@ is fallback in content: false
 
 
 === TEST 12: fallback in non-supported contexts only (bis)
---- http_config eval
-"$t::Utils::HttpConfig"
+--- http_config eval: $::HttpConfig
 --- config
     location /t {
         content_by_lua_block {
             local socket = require 'resty.socket'
             local sock = socket.tcp()
-            print('is fallback in content: '..tostring(getmetatable(sock) == socket.luasocket_mt))
+            print('is fallback in content: ', getmetatable(sock) == socket.luasocket_mt)
         }
 
         header_filter_by_lua_block {
             local socket = require 'resty.socket'
             local sock = socket.tcp()
-            print('is fallback in header_filter: '..tostring(getmetatable(sock) == socket.luasocket_mt))
+            print('is fallback in header_filter: ', getmetatable(sock) == socket.luasocket_mt)
         }
     }
 --- request
