@@ -1,25 +1,5 @@
-local ngx_socket, has_cosocket, log, WARN
-local setmetatable = setmetatable
 local pairs = pairs
 local type = type
-
------------------------
--- ngx_lua/plain compat
------------------------
-
-if ngx then
-  log = ngx.log
-  WARN = ngx.WARN
-  local get_phase = ngx.get_phase
-  ngx_socket = ngx.socket
-  has_cosocket = function()
-    local phase = get_phase()
-    return phase == 'rewrite' or phase == 'access'
-        or phase == 'content' or phase == 'timer', phase
-  end
-else
-  has_cosocket = function()end
-end
 
 ----------------------------
 -- LuaSocket proxy metatable
@@ -100,25 +80,58 @@ function luasocket_mt:sslhandshake(reused_session, _, verify, opts)
   return return_bool and true or self
 end
 
+-----------------------
+-- ngx_lua/plain compat
+-----------------------
+
+local new_tcp
+
+do
+  local setmetatable = setmetatable
+
+  if ngx then
+    local log, WARN = ngx.log, ngx.WARN
+    local get_phase = ngx.get_phase
+    local ngx_socket = ngx.socket
+
+    local cosocket_phases = {
+      rewrite = true,
+      access = true,
+      content = true,
+      timer = true
+    }
+
+    new_tcp = function(...)
+      local phase = get_phase()
+      if cosocket_phases[phase] then
+        return ngx_socket.tcp(...)
+      elseif phase ~= 'init' then
+        log(WARN, 'no support for cosockets in this context, falling back on LuaSocket')
+      end
+
+      local socket = require 'socket'
+
+      return setmetatable({
+        sock = socket.tcp(...)
+      }, luasocket_mt)
+    end
+  else
+    local socket = require 'socket'
+
+    new_tcp = function(...)
+      return setmetatable({
+        sock = socket.tcp(...)
+      }, luasocket_mt)
+    end
+  end
+end
+
 ---------
 -- Module
 ---------
 
 return {
-  tcp = function(...)
-    local ok, phase = has_cosocket()
-    if ok then
-      return ngx_socket.tcp(...)
-    elseif log and phase ~= 'init' then
-      log(WARN, 'no support for cosockets in this context, falling back on LuaSocket')
-    end
-
-    local socket = require 'socket'
-
-    return setmetatable({
-      sock = socket.tcp(...)
-    }, luasocket_mt)
-  end,
+  tcp = new_tcp,
   luasocket_mt = luasocket_mt,
   _VERSION = '0.0.4'
 }
