@@ -9,6 +9,7 @@ if [ ! "$(ls -A $OPENRESTY_DIR)" ]; then
   pushd $OPENRESTY_BASE
     ./configure \
       --prefix=$OPENRESTY_DIR \
+      --with-ipv6 \
       --without-http_coolkit_module \
       --without-lua_resty_dns \
       --without-lua_resty_lrucache \

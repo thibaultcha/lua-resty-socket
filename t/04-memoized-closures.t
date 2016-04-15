@@ -24,7 +24,7 @@ __DATA__
             local socket = require 'resty.socket'
             local sock = socket.tcp()
 
-            local ok, err = sock:connect("www.google.com", 443)
+            local ok, err = sock:connect('www.google.com', 443)
             if ok ~= 1 then
                 ngx.log(ngx.ERR, 'could not connect: ', err)
                 return
