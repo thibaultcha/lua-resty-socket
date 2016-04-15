@@ -5,7 +5,7 @@ our $HttpConfig = <<_EOC_;
     lua_package_path 'lib/?.lua;;';
 _EOC_
 
-plan tests => repeat_each() * blocks() * 4;
+plan tests => repeat_each() * blocks() * 2;
 
 $ENV{TEST_NGINX_RESOLVER} ||= '8.8.8.8';
 
@@ -24,7 +24,7 @@ __DATA__
             local socket = require 'resty.socket'
             local sock = socket.tcp()
 
-            local ok, err = sock:connect("www.google.com", 443)
+            local ok, err = sock:connect('www.google.com', 443)
             if ok ~= 1 then
                 ngx.log(ngx.ERR, 'could not connect: ', err)
                 return
@@ -57,9 +57,7 @@ __DATA__
     }
 --- request
 GET /t
---- response_body
-
 --- no_error_log
 [error]
---- error_log
-HTTP/1.1 200 OK
+--- error_log_eval
+qr/\[notice\] .*? HTTP/1.1 200 OK/
