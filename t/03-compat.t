@@ -5,7 +5,7 @@ our $HttpConfig = <<_EOC_;
     lua_package_path 'lib/?.lua;;';
 _EOC_
 
-plan tests => repeat_each() * blocks() * 3 + 1;
+plan tests => repeat_each() * blocks() * 3 - 2;
 
 $ENV{TEST_NGINX_RESOLVER} ||= '8.8.8.8';
 
@@ -201,6 +201,42 @@ could not send after keepalive: closed
 GET /t
 --- no_error_log
 [error]
---- error_log
-session: table
-HTTP/1.1 200 OK
+--- error_log_eval
+[
+    qr/\[notice\] .*? session: table/,
+    qr/\[notice\] .?* HTTP/1.1 200 OK/
+]
+
+
+
+=== TEST 6: luasocket sslhandshake() compat arg #1 false
+--- http_config eval: $::HttpConfig
+--- config
+    resolver $TEST_NGINX_RESOLVER ipv6=off;
+    location /t {
+        return 200;
+
+        log_by_lua_block {
+            local socket = require 'resty.socket'
+            local sock = socket.tcp()
+            local ok, err = sock:connect('www.google.com', 443)
+            if not ok then
+                ngx.log(ngx.ERR, 'could not connect: ', err)
+                return
+            end
+
+            local session, err = sock:sslhandshake(false, nil, false)
+            if not session then
+                ngx.log(ngx.ERR, 'could not handshake: ', err)
+                return
+            end
+
+            print('session: ', type(session))
+        }
+    }
+--- request
+GET /t
+--- no_error_log
+[error]
+--- error_log_eval
+qr/\[notice\] .*? session: boolean/
