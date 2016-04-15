@@ -13,7 +13,7 @@ addons:
       - build-essential
 env:
   global:
-    - OPENRESTY=1.9.7.3
+    - OPENRESTY=1.9.7.4
     - OPENRESTY_DIR=$HOME/openresty
 before_install:
   - bash .ci/setup_openresty.sh
