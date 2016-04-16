@@ -22,7 +22,7 @@ The aim of this module is to provide an automatic fallback to LuaSocket when
 - In ngx_lua contexts where cosockets are not supported (`init`, `init_worker`,
 etc...)
 
-When fallbacking to LuaSocket, it provides you with shims for cosocket-only
+When falling back to LuaSocket, it provides you with shims for cosocket-only
 functions such as `getreusedtimes`, `setkeepalive` etc...
 
 It comes handy when one is developing a module/library that aims at being
@@ -37,7 +37,7 @@ The use of LuaSocket inside ngx_lua is **very strongly** discouraged due to its
 blocking nature. However, it is fine to use it in the `init` context where
 blocking is not considered harmful.
 
-In the future, only the `init` phase will allow fallbacking to LuaSocket.
+In the future, only the `init` phase will allow falling back to LuaSocket.
 
 It currently only support TCP sockets.
 
@@ -99,7 +99,7 @@ in the `init` phase of ngx_lua, with little effort from the developer.
 
 [Back to TOC](#table-of-contents)
 
-## Requirements
+### Requirements
 
 **As long as sockets are created in contexts with support for cosockets, this
 module will never require LuaSocket nor LuaSec.**
@@ -109,7 +109,7 @@ module will never require LuaSocket nor LuaSec.**
 
 [Back to TOC](#table-of-contents)
 
-## Installation
+### Installation
 
 This module can either be copied in a lua-resty library, allowing one to
 modify the list of contexts allowing fallback.
@@ -133,4 +133,4 @@ Work licensed under the MIT License.
 [badge-travis-url]: https://travis-ci.org/thibaultCha/lua-resty-socket
 [badge-travis-image]: https://travis-ci.org/thibaultCha/lua-resty-socket.svg?branch=master
 
-[badge-version-image]: https://img.shields.io/badge/version-0.0.4-blue.svg?style=flat
+[badge-version-image]: https://img.shields.io/badge/version-0.0.5-blue.svg?style=flat

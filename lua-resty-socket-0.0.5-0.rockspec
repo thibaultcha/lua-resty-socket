@@ -1,8 +1,8 @@
 package = "lua-resty-socket"
-version = "0.0.4-0"
+version = "0.0.5-0"
 source = {
   url = "git://github.com/thibaultCha/lua-resty-socket",
-  tag = "0.0.4"
+  tag = "0.0.5"
 }
 description = {
   summary = "Graceful fallback to LuaSocket for ngx_lua",

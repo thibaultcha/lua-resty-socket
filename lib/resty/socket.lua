@@ -6,7 +6,7 @@ local type = type
 ----------------------------
 
 local proxy_mt = {
-  getreusedtimes = function(self) return 0 end,
+  getreusedtimes = function() return 0 end,
   settimeout = function(self, t)
     if t then
       t = t/1000
@@ -123,5 +123,5 @@ end
 return {
   tcp = new_tcp,
   luasocket_mt = proxy_mt,
-  _VERSION = '0.0.4'
+  _VERSION = '0.0.5'
 }
