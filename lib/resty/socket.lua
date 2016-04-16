@@ -5,9 +5,57 @@ local type = type
 -- LuaSocket proxy metatable
 ----------------------------
 
-local luasocket_mt = {}
+local proxy_mt = {
+  getreusedtimes = function() return 0 end,
+  settimeout = function(self, t)
+    if t then
+      t = t/1000
+    end
+    self.sock:settimeout(t)
+  end,
+  setkeepalive = function(self)
+    self.sock:close()
+    return true
+  end,
+  sslhandshake = function(self, reused_session, _, verify, opts)
+    opts = opts or {}
+    local return_bool = reused_session == false
 
-function luasocket_mt:__index(key)
+    local ssl = require 'ssl'
+    local params = {
+      mode = 'client',
+      protocol = 'tlsv1',
+      key = opts.key,
+      certificate = opts.cert,
+      cafile = opts.cafile,
+      verify = verify and 'peer' or 'none',
+      options = 'all'
+    }
+
+    local sock, err = ssl.wrap(self.sock, params)
+    if not sock then
+      return return_bool and false or nil, err
+    end
+
+    local ok, err = sock:dohandshake()
+    if not ok then
+      return return_bool and false or nil, err
+    end
+
+    -- purge memoized closures
+    for k, v in pairs(self) do
+      if type(v) == 'function' then
+        self[k] = nil
+      end
+    end
+
+    self.sock = sock
+
+    return return_bool and true or self
+  end
+}
+
+proxy_mt.__index = function(self, key)
   local orig = self.sock[key]
   if type(orig) == 'function' then
     local f = function(_, ...)
@@ -19,65 +67,7 @@ function luasocket_mt:__index(key)
     return orig
   end
 
-  return luasocket_mt[key]
-end
-
-function luasocket_mt.getreusedtimes()
-  return 0
-end
-
-function luasocket_mt:settimeout(t)
-  if t then
-    t = t/1000
-  end
-
-  self.sock:settimeout(t)
-end
-
-function luasocket_mt:setkeepalive()
-  self.sock:close()
-
-  return true
-end
-
--- Mimics the ngx_lua `sslhandshake()` signature with
--- an additional argument to specify other SSL options
--- for LuaSec.
-function luasocket_mt:sslhandshake(reused_session, _, verify, opts)
-  opts = opts or {}
-  local return_bool = reused_session == false
-
-  local ssl = require 'ssl'
-  local params = {
-    mode = 'client',
-    protocol = 'tlsv1',
-    key = opts.key,
-    certificate = opts.cert,
-    cafile = opts.cafile,
-    verify = verify and 'peer' or 'none',
-    options = 'all'
-  }
-
-  local sock, err = ssl.wrap(self.sock, params)
-  if not sock then
-    return return_bool and false or nil, err
-  end
-
-  local ok, err = sock:dohandshake()
-  if not ok then
-    return return_bool and false or nil, err
-  end
-
-  -- purge memoized closures
-  for k, v in pairs(self) do
-    if type(v) == 'function' then
-      self[k] = nil
-    end
-  end
-
-  self.sock = sock
-
-  return return_bool and true or self
+  return proxy_mt[key]
 end
 
 -----------------------
@@ -113,7 +103,7 @@ do
 
       return setmetatable({
         sock = socket.tcp(...)
-      }, luasocket_mt)
+      }, proxy_mt)
     end
   else
     local socket = require 'socket'
@@ -121,7 +111,7 @@ do
     new_tcp = function(...)
       return setmetatable({
         sock = socket.tcp(...)
-      }, luasocket_mt)
+      }, proxy_mt)
     end
   end
 end
@@ -132,6 +122,6 @@ end
 
 return {
   tcp = new_tcp,
-  luasocket_mt = luasocket_mt,
-  _VERSION = '0.0.4'
+  luasocket_mt = proxy_mt,
+  _VERSION = '0.0.5'
 }
