@@ -16,7 +16,7 @@ describe('resty.socket', function()
     assert.is_number(bytes)
 
     local status = assert(sock:receive())
-    assert.equal("HTTP/1.1 200 OK", status)
+    assert.equal('HTTP/1.1 200 OK', status)
   end)
 
   describe('setkeepalive()', function()
@@ -29,12 +29,7 @@ describe('resty.socket', function()
       sock:setkeepalive()
 
       local _, err = sock:send('HEAD / HTTP/1.1\r\nHost: www.google.com\r\nConnection: close\r\n\r\n')
-      assert.equal("closed", err)
+      assert.equal('closed', err)
     end)
-  end)
-
-  it('exposes metadata', function()
-    assert.matches('%d.%d.%d', socket._VERSION)
-    assert.is_table(socket.luasocket_mt)
   end)
 end)

@@ -36,8 +36,7 @@ reused: 0
 
 
 === TEST 2: luasocket settimeout() compat (ms to seconds conversion)
---- SKIP
---- wait: 3
+--- wait: 1
 --- http_config eval: $::HttpConfig
 --- config
     location /get {
