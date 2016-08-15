@@ -3,16 +3,39 @@
 ![Module Version][badge-version-image]
 [![Build Status][badge-travis-image]][badge-travis-url]
 
-cosocket/LuaSocket compatibility module.
+cosocket/LuaSocket automatic compatibility module for lua-resty modules wanting
+to be compatible with plain Lua or OpenResty's `init` context.
+
+The use case for this library is: you are developing a lua-resty module relying
+on cosockets, but you want it to also be usable in OpenResty's `init` context
+or even in plain Lua. This module aims at always providing your library with
+sockets that will be compatible in the current context, saving you time and
+effort, and extending LuaSocket's API to match that of cosockets, allowing you
+to always write your code as if you were in a cosocket-compatible OpenResty
+context.
 
 ### Table of Contents
 
+* [Features](#features)
 * [Motivation](#motivation)
 * [Important note](#important-note)
 * [Usage](#usage)
 * [Requirements](#requirements)
 * [Installation](#installation)
 * [License](#license)
+
+### Features
+
+* Allows your lua-resty modules to automatically use cosockets/LuaSocket
+* Provides `sslhandshake` proxy when using LuaSocket, with a dependency on
+  LuaSec
+* Does not get blocked to using LuaSocket in further contexts if loaded in the
+  ngx_lua `init` (easy mistake to make)
+* Memoizes underlying socket methods for performance
+* Outputs a warning log for your users when spawning a socket using LuaSocket
+  while in OpenResty
+
+[Back to TOC](#table-of-contents)
 
 ### Motivation
 
