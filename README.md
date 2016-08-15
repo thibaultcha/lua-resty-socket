@@ -18,6 +18,7 @@ context.
 
 * [Features](#features)
 * [Motivation](#motivation)
+* [Libraries using it](#libraries-using-it)
 * [Important note](#important-note)
 * [Usage](#usage)
 * [Requirements](#requirements)
@@ -51,6 +52,20 @@ functions such as `getreusedtimes`, `setkeepalive` etc...
 It comes handy when one is developing a module/library that aims at being
 either compatible with both ngx_lua **and** plain Lua, **or** in ngx_lua
 contexts such as `init`.
+
+[Back to TOC](#table-of-contents)
+
+### Libraries using it
+
+Here are some concrete examples uses of this module. You can see how we only
+write code as if we were constantly in an cosocket-compatible OpenResty
+context, which greatly simplifies our work and provides out of the box plain
+Lua compatibility.
+
+* [lua-cassandra](https://github.com/thibaultcha/lua-cassandra): see how the
+  [cassandra](https://github.com/thibaultcha/lua-cassandra/blob/master/lib/cassandra/init.lua)
+  module is compatible in both OpenResty and plain Lua with no efforts or
+  special code paths distinguishing cosockets and LuaSocket.
 
 [Back to TOC](#table-of-contents)
 
