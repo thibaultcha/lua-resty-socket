@@ -82,29 +82,42 @@ end
 -- ngx_lua/plain compat
 -----------------------
 
+local COSOCKET_PHASES = {
+  rewrite = true,
+  access = true,
+  content = true,
+  timer = true,
+  ssl_cert = true,
+  ssl_session_fetch = true
+}
+
 local new_tcp
+local forced_luasocket_phases = {}
+local forbidden_luasocket_phases = {}
 
 do
   local setmetatable = setmetatable
 
   if ngx then
-    local log, WARN = ngx.log, ngx.WARN
+    local log, WARN, INFO = ngx.log, ngx.WARN, ngx.INFO
     local get_phase = ngx.get_phase
     local ngx_socket = ngx.socket
 
-    local cosocket_phases = {
-      rewrite = true,
-      access = true,
-      content = true,
-      timer = true
-    }
-
     new_tcp = function(...)
       local phase = get_phase()
-      if cosocket_phases[phase] then
+      if not forced_luasocket_phases[phase]
+         and COSOCKET_PHASES[phase]
+         or forbidden_luasocket_phases[phase] then
         return ngx_socket.tcp(...)
-      elseif phase ~= 'init' then
-        log(WARN, 'no support for cosockets in this context, falling back on LuaSocket')
+      end
+
+      -- LuaSocket
+      if phase ~= 'init' then
+        if forced_luasocket_phases[phase] then
+          log(INFO, 'support for cosocket in this context, but LuaSocket forced')
+        else
+          log(WARN, 'no support for cosockets in this context, falling back to LuaSocket')
+        end
       end
 
       local socket = require 'socket'
@@ -124,12 +137,33 @@ do
   end
 end
 
+local function check_phase(phase)
+  if type(phase) ~= 'string' then
+    local info = debug.getinfo(2)
+    local err = string.format("bad argument #1 to '%s' (%s expected, got %s)",
+                              info.name, 'string', type(phase))
+    error(err, 3)
+  end
+end
+
+local function force_luasocket(phase, force)
+  check_phase(phase)
+  forced_luasocket_phases[phase] = force
+end
+
+local function disable_luasocket(phase, disable)
+  check_phase(phase)
+  forbidden_luasocket_phases[phase] = disable
+end
+
 ---------
 -- Module
 ---------
 
 return {
   tcp = new_tcp,
+  force_luasocket = force_luasocket,
+  disable_luasocket= disable_luasocket,
   luasocket_mt = proxy_mt,
   _VERSION = '0.0.6'
 }
