@@ -5,7 +5,7 @@ our $HttpConfig = <<_EOC_;
     lua_package_path 'lib/?.lua;;';
 _EOC_
 
-plan tests => repeat_each() * blocks() * 3 - 2;
+plan tests => repeat_each() * blocks() * 3 - 1;
 
 $ENV{TEST_NGINX_RESOLVER} ||= '8.8.8.8';
 
@@ -13,7 +13,55 @@ run_tests();
 
 __DATA__
 
-=== TEST 1: luasocket getreusedtimes()
+=== TEST 1: luasocket send()
+--- wait: 1
+--- http_config eval: $::HttpConfig
+--- config
+    resolver $TEST_NGINX_RESOLVER ipv6=off;
+    location /t {
+        return 200;
+
+        log_by_lua_block {
+            local socket = require 'resty.socket'
+            local sock = socket.tcp()
+
+            local ok, err = sock:connect('www.google.com', 80)
+            if ok ~= 1 then
+                ngx.log(ngx.ERR, 'could not connect: ', err)
+                return
+            end
+
+            local data = {
+              'HEAD ', '/ ', 'HTTP/1.1 ', '\r\n', 'Host: www.google.com',
+              '\r\n', 'Connection: close', '\r\n\r\n'
+            }
+            local bytes, err = sock:send(data)
+            if not bytes then
+                ngx.log(ngx.ERR, 'could not send: ', err)
+                return
+            end
+
+            local res, err = sock:receive()
+            if not res then
+                ngx.log(ngx.ERR, 'could not receive: ', err)
+                return
+            end
+
+            print(res)
+        }
+    }
+--- request
+GET /t
+--- response_body
+
+--- no_error_log
+[error]
+--- error_log
+HTTP/1.1 200 OK
+
+
+
+=== TEST 2: luasocket getreusedtimes()
 --- http_config eval: $::HttpConfig
 --- config
     location /t {
@@ -35,7 +83,7 @@ reused: 0
 
 
 
-=== TEST 2: luasocket settimeout() compat (ms to seconds conversion)
+=== TEST 3: luasocket settimeout() compat (ms to seconds conversion)
 --- wait: 1
 --- http_config eval: $::HttpConfig
 --- config
@@ -84,7 +132,7 @@ could not receive: timeout
 
 
 
-=== TEST 3: luasocket settimeout() nil
+=== TEST 4: luasocket settimeout() nil
 --- wait: 1
 --- http_config eval: $::HttpConfig
 --- config
@@ -107,7 +155,7 @@ ok
 
 
 
-=== TEST 4: luasocket setkeepalive() compat (close)
+=== TEST 5: luasocket setkeepalive() compat (close)
 --- wait: 1
 --- http_config eval: $::HttpConfig
 --- config
@@ -157,7 +205,7 @@ could not send after keepalive: closed
 
 
 
-=== TEST 5: luasocket sslhandshake() compat
+=== TEST 6: luasocket sslhandshake() compat
 --- http_config eval: $::HttpConfig
 --- config
     resolver $TEST_NGINX_RESOLVER ipv6=off;
@@ -208,7 +256,7 @@ GET /t
 
 
 
-=== TEST 6: luasocket sslhandshake() compat arg #1 false
+=== TEST 7: luasocket sslhandshake() compat arg #1 false
 --- http_config eval: $::HttpConfig
 --- config
     resolver $TEST_NGINX_RESOLVER ipv6=off;
