@@ -65,7 +65,7 @@ GET /t
 --- response_body
 
 --- error_log eval
-qr/\[warn\].*?no support for cosockets in this context, falling back on LuaSocket/
+qr/\[warn\].*?no support for cosockets in this context, falling back to LuaSocket/
 
 
 

@@ -55,7 +55,7 @@ GET /t
 [error]
 --- error_log
 is fallback: true
-no support for cosockets in this context, falling back on LuaSocket
+no support for cosockets in this context, falling back to LuaSocket
 
 
 
@@ -79,7 +79,7 @@ ok
 [error]
 --- error_log
 is fallback: true
-no support for cosockets in this context, falling back on LuaSocket
+no support for cosockets in this context, falling back to LuaSocket
 
 
 
@@ -168,7 +168,7 @@ GET /t
 [error]
 --- error_log
 is fallback: true
-no support for cosockets in this context, falling back on LuaSocket
+no support for cosockets in this context, falling back to LuaSocket
 
 
 
@@ -192,7 +192,7 @@ GET /t
 [error]
 --- error_log
 is fallback: true
-no support for cosockets in this context, falling back on LuaSocket
+no support for cosockets in this context, falling back to LuaSocket
 
 
 
@@ -216,7 +216,7 @@ GET /t
 [error]
 --- error_log
 is fallback: true
-no support for cosockets in this context, falling back on LuaSocket
+no support for cosockets in this context, falling back to LuaSocket
 
 
 
@@ -298,6 +298,6 @@ GET /t
 --- error_log
 is fallback in content: false
 is fallback in header_filter: true
-no support for cosockets in this context, falling back on LuaSocket
+no support for cosockets in this context, falling back to LuaSocket
 --- no_error_log
 [error]
