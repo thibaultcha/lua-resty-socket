@@ -171,4 +171,4 @@ Work licensed under the MIT License.
 [badge-travis-url]: https://travis-ci.org/thibaultcha/lua-resty-socket
 [badge-travis-image]: https://travis-ci.org/thibaultcha/lua-resty-socket.svg?branch=master
 
-[badge-version-image]: https://img.shields.io/badge/version-0.0.6-blue.svg?style=flat
+[badge-version-image]: https://img.shields.io/badge/version-0.0.7-blue.svg?style=flat

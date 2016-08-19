@@ -109,7 +109,7 @@ end
 
 local _M = {
   luasocket_mt = proxy_mt,
-  _VERSION = '0.0.6'
+  _VERSION = '0.0.7'
 }
 
 -----------------------
