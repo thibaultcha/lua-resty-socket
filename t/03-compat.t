@@ -5,7 +5,7 @@ our $HttpConfig = <<_EOC_;
     lua_package_path 'lib/?.lua;;';
 _EOC_
 
-plan tests => repeat_each() * blocks() * 3 - 1;
+plan tests => repeat_each() * (blocks() * 3 + 2);
 
 $ENV{TEST_NGINX_RESOLVER} ||= '8.8.8.8';
 
@@ -248,10 +248,10 @@ could not send after keepalive: closed
 GET /t
 --- no_error_log
 [error]
---- error_log_eval
+--- error_log eval
 [
     qr/\[notice\] .*? session: table/,
-    qr/\[notice\] .?* HTTP/1.1 200 OK/
+    qr/\[notice\] .*? HTTP\/1.1 200 OK/
 ]
 
 
@@ -285,7 +285,7 @@ GET /t
 GET /t
 --- no_error_log
 [error]
---- error_log_eval
+--- error_log eval
 qr/\[notice\] .*? session: boolean/
 
 
