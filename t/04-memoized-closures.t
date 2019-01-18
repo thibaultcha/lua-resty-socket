@@ -14,6 +14,7 @@ run_tests();
 __DATA__
 
 === TEST 1: purge memoized closures
+--- wait: 1
 --- http_config eval: $::HttpConfig
 --- config
     resolver $TEST_NGINX_RESOLVER ipv6=off;

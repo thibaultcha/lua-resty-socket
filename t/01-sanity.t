@@ -50,6 +50,7 @@ table
 
 
 === TEST 3: warn message on fallback
+--- wait: 1
 --- http_config eval: $::HttpConfig
 --- config
     location /t {
