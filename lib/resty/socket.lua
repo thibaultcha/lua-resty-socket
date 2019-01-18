@@ -42,6 +42,13 @@ do
       self.sock:close()
       return true
     end,
+    close = function(self)
+      -- LuaSec dismisses the return value from sock:close(), so we override
+      -- sock:close() here to ensure that we always return non-nil from it,
+      -- even when wrapped by LuaSec
+      self.sock:close()
+      return 1
+    end,
     sslhandshake = function(self, reused_session, _, verify, opts)
       opts = opts or {}
       local return_bool = reused_session == false
@@ -196,4 +203,3 @@ do
 end
 
 return _M
-
