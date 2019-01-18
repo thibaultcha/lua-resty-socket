@@ -62,6 +62,7 @@ HTTP/1.1 200 OK
 
 
 === TEST 2: luasocket getreusedtimes()
+--- wait: 1
 --- http_config eval: $::HttpConfig
 --- config
     location /t {
@@ -206,6 +207,7 @@ could not send after keepalive: closed
 
 
 === TEST 6: luasocket sslhandshake() compat
+--- wait: 1
 --- http_config eval: $::HttpConfig
 --- config
     resolver $TEST_NGINX_RESOLVER ipv6=off;
@@ -257,6 +259,7 @@ GET /t
 
 
 === TEST 7: luasocket sslhandshake() compat arg #1 false
+--- wait: 1
 --- http_config eval: $::HttpConfig
 --- config
     resolver $TEST_NGINX_RESOLVER ipv6=off;
@@ -291,6 +294,7 @@ qr/\[notice\] .*? session: boolean/
 
 
 === TEST 8: luasocket close() after sslhandshake() compat (LuaSec wrapper)
+--- wait: 1
 --- http_config eval: $::HttpConfig
 --- config
     resolver $TEST_NGINX_RESOLVER ipv6=off;

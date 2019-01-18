@@ -197,6 +197,7 @@ no support for cosockets in this context, falling back to LuaSocket
 
 
 === TEST 9: luasocket in log
+--- wait: 1
 --- http_config eval: $::HttpConfig
 --- config
     location /t {
@@ -221,6 +222,7 @@ no support for cosockets in this context, falling back to LuaSocket
 
 
 === TEST 10: cosocket in timer
+--- wait: 1
 --- http_config eval: $::HttpConfig
 --- config
     location /t {
