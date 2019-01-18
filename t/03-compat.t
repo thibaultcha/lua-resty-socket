@@ -156,7 +156,7 @@ ok
 
 
 
-=== TEST 5: luasocket setkeepalive() compat (close)
+=== TEST 5: luasocket setkeepalive() compat (close when not supported)
 --- wait: 1
 --- http_config eval: $::HttpConfig
 --- config
@@ -293,7 +293,7 @@ qr/\[notice\] .*? session: boolean/
 
 
 
-=== TEST 8: luasocket close() after sslhandshake() compat (LuaSec wrapper)
+=== TEST 8: luasocket close() after sslhandshake() ret values compat (LuaSec wrapper)
 --- wait: 1
 --- http_config eval: $::HttpConfig
 --- config
@@ -327,3 +327,40 @@ GET /t
 [error]
 --- error_log eval
 qr/\[notice\] .*? ok: 1 err: nil/
+
+
+
+=== TEST 9: luasocket setkeepalive() after sslhandshake() ret values compat (LuaSec wrapper)
+--- wait: 1
+--- http_config eval: $::HttpConfig
+--- config
+    resolver $TEST_NGINX_RESOLVER ipv6=off;
+    location /t {
+        return 200;
+
+        log_by_lua_block {
+            local socket = require 'resty.socket'
+            local sock = socket.tcp()
+            local ok, err = sock:connect('www.google.com', 443)
+            if not ok then
+                ngx.log(ngx.ERR, 'could not connect: ', err)
+                return
+            end
+
+            local session, err = sock:sslhandshake(false, nil, false)
+            if not session then
+                ngx.log(ngx.ERR, 'could not handshake: ', err)
+                return
+            end
+
+            local ok, err = sock:setkeepalive()
+
+            print("ok: ", tostring(ok), " err: ", tostring(err))
+        }
+    }
+--- request
+GET /t
+--- no_error_log
+[error]
+--- error_log eval
+qr/\[notice\] .*? ok: true err: nil/
