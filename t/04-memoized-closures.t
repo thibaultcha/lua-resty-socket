@@ -5,7 +5,7 @@ our $HttpConfig = <<_EOC_;
     lua_package_path 'lib/?.lua;;';
 _EOC_
 
-plan tests => repeat_each() * blocks() * 2;
+plan tests => repeat_each() * (blocks() * 3);
 
 $ENV{TEST_NGINX_RESOLVER} ||= '8.8.8.8';
 
@@ -59,5 +59,5 @@ __DATA__
 GET /t
 --- no_error_log
 [error]
---- error_log_eval
-qr/\[notice\] .*? HTTP/1.1 200 OK/
+--- error_log eval
+qr/\[notice\] .*? HTTP\/1.1 200 OK/
