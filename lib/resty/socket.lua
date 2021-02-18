@@ -71,12 +71,13 @@ do
       local ssl = require 'ssl'
       local params = {
         mode = 'client',
-        protocol = 'tlsv1',
+        protocol = 'any',
         key = opts.key,
         certificate = opts.cert,
         cafile = opts.cafile,
         verify = verify and 'peer' or 'none',
-        options = 'all'
+        -- can the following be dynamically generated from `lua_ssl_protocols`?
+        options = {"all", "no_sslv2", "no_sslv3", "no_tlsv1"}
       }
 
       local sock, err = ssl.wrap(self.sock, params)
