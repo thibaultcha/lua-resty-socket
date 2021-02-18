@@ -14,6 +14,8 @@ do
   local function flatten(v, buf)
     if type(v) == 'string' then
       buf[#buf+1] = v
+    elseif type(v) == 'number' then
+      buf[#buf+1] = tostring(v)
     elseif type(v) == 'table' then
       for i = 1, #v do
         flatten(v[i], buf)
