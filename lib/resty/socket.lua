@@ -22,6 +22,19 @@ do
   end
 
   proxy_mt = {
+    connect = function(self, ...)
+      local ok, err = self.sock:connect(...)
+      
+      if self._connected_before and err == "closed" then
+        -- luasocket does not allow reusing sockets after being closed
+        local socket = require 'socket'
+        self.sock = socket.tcp()
+        ok, err = self.sock:connect(...)
+      end
+      
+      self._connected_before = true
+      return ok, err
+    end,
     send = function(self, data)
       if type(data) == 'table' then
         local buffer = {}
