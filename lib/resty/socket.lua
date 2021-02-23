@@ -64,7 +64,11 @@ do
       self.sock:close()
       return 1
     end,
-    sslhandshake = function(self, reused_session, _, verify, opts)
+    sslhandshake = function(self, reused_session, _, verify, send_status_req, opts)
+      if opts == nil and type(send_status_req) == "table" then
+        -- backward compat after OR added send_status_req, shift args
+        opts, send_status_req = send_status_req, nil       -- luacheck: ignore
+      end
       opts = opts or {}
       local return_bool = reused_session == false
 
