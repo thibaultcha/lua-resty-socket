@@ -1,4 +1,5 @@
 local type = type
+local luasec_defaults = {}
 
 ----------------------------
 -- LuaSocket proxy metatable
@@ -26,14 +27,14 @@ do
   proxy_mt = {
     connect = function(self, ...)
       local ok, err = self.sock:connect(...)
-      
+
       if self._connected_before and err == "closed" then
         -- luasocket does not allow reusing sockets after being closed
         local socket = require 'socket'
         self.sock = socket.tcp()
         ok, err = self.sock:connect(...)
       end
-      
+
       self._connected_before = true
       return ok, err
     end,
@@ -75,13 +76,12 @@ do
       local ssl = require 'ssl'
       local params = {
         mode = 'client',
-        protocol = 'any',
-        key = opts.key,
-        certificate = opts.cert,
-        cafile = opts.cafile,
+        protocol = opts.protocol or luasec_defaults.protocol or 'any',
+        key = opts.key or luasec_defaults.key or nil,
+        certificate = opts.cert or luasec_defaults.cert or nil,
+        cafile = opts.cafile or luasec_defaults.cafile or nil,
         verify = verify and 'peer' or 'none',
-        -- can the following be dynamically generated from `lua_ssl_protocols`?
-        options = {"all", "no_sslv2", "no_sslv3", "no_tlsv1"}
+        options = opts.options or luasec_defaults.options or {"all", "no_sslv2", "no_sslv3", "no_tlsv1"}
       }
 
       local sock, err = ssl.wrap(self.sock, params)
@@ -221,5 +221,24 @@ do
     forbidden_luasocket_phases[phase] = disable
   end
 end
+
+
+---------------------------------------
+-- Setting LuaSec defaults
+---------------------------------------
+
+function _M.set_luasec_defaults(defaults)
+  if type(defaults) ~= "table" then
+    error(string.format(
+      "bad argument #1 to 'set_luasec_defaults' (table expected, got %s",
+      type(defaults)), 2)
+  end
+  luasec_defaults.protocol = defaults.protocol
+  luasec_defaults.key = defaults.key
+  luasec_defaults.cert = defaults.cert
+  luasec_defaults.cafile = defaults.cafile
+  luasec_defaults.options = defaults.options
+end
+
 
 return _M
