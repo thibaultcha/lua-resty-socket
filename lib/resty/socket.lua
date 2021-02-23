@@ -1,4 +1,5 @@
 local type = type
+local luasec_defaults = {}
 
 ----------------------------
 -- LuaSocket proxy metatable
@@ -14,6 +15,8 @@ do
   local function flatten(v, buf)
     if type(v) == 'string' then
       buf[#buf+1] = v
+    elseif type(v) == 'number' then
+      buf[#buf+1] = tostring(v)
     elseif type(v) == 'table' then
       for i = 1, #v do
         flatten(v[i], buf)
@@ -22,6 +25,19 @@ do
   end
 
   proxy_mt = {
+    connect = function(self, ...)
+      local ok, err = self.sock:connect(...)
+
+      if self._connected_before and err == "closed" then
+        -- luasocket does not allow reusing sockets after being closed
+        local socket = require 'socket'
+        self.sock = socket.tcp()
+        ok, err = self.sock:connect(...)
+      end
+
+      self._connected_before = true
+      return ok, err
+    end,
     send = function(self, data)
       if type(data) == 'table' then
         local buffer = {}
@@ -49,19 +65,23 @@ do
       self.sock:close()
       return 1
     end,
-    sslhandshake = function(self, reused_session, _, verify, opts)
+    sslhandshake = function(self, reused_session, _, verify, send_status_req, opts)
+      if opts == nil and type(send_status_req) == "table" then
+        -- backward compat after OR added send_status_req, shift args
+        opts, send_status_req = send_status_req, nil       -- luacheck: ignore
+      end
       opts = opts or {}
       local return_bool = reused_session == false
 
       local ssl = require 'ssl'
       local params = {
         mode = 'client',
-        protocol = 'tlsv1',
-        key = opts.key,
-        certificate = opts.cert,
-        cafile = opts.cafile,
+        protocol = opts.protocol or luasec_defaults.protocol or 'any',
+        key = opts.key or luasec_defaults.key or nil,
+        certificate = opts.cert or luasec_defaults.cert or nil,
+        cafile = opts.cafile or luasec_defaults.cafile or nil,
         verify = verify and 'peer' or 'none',
-        options = 'all'
+        options = opts.options or luasec_defaults.options or {"all", "no_sslv2", "no_sslv3", "no_tlsv1"}
       }
 
       local sock, err = ssl.wrap(self.sock, params)
@@ -201,5 +221,24 @@ do
     forbidden_luasocket_phases[phase] = disable
   end
 end
+
+
+---------------------------------------
+-- Setting LuaSec defaults
+---------------------------------------
+
+function _M.set_luasec_defaults(defaults)
+  if type(defaults) ~= "table" then
+    error(string.format(
+      "bad argument #1 to 'set_luasec_defaults' (table expected, got %s",
+      type(defaults)), 2)
+  end
+  luasec_defaults.protocol = defaults.protocol
+  luasec_defaults.key = defaults.key
+  luasec_defaults.cert = defaults.cert
+  luasec_defaults.cafile = defaults.cafile
+  luasec_defaults.options = defaults.options
+end
+
 
 return _M
