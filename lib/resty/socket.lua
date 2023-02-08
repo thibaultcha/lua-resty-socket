@@ -1,5 +1,12 @@
 local type = type
-local luasec_defaults = {}
+local luasec_defaults = {
+  _fields = { "protocol", "key", "cert", "cafile", "options" }, -- meta-field to list settable fields
+  protocol = "any",
+  key = nil,
+  cert = nil,
+  cafile = nil,
+  options = { "all", "no_sslv2", "no_sslv3", "no_tlsv1" },
+}
 
 ----------------------------
 -- LuaSocket proxy metatable
@@ -83,12 +90,12 @@ do
       local ssl = require 'ssl'
       local params = {
         mode = 'client',
-        protocol = opts.protocol or luasec_defaults.protocol or 'any',
+        verify = verify and 'peer' or 'none',
+        protocol = opts.protocol or luasec_defaults.protocol or nil,
         key = opts.key or luasec_defaults.key or nil,
         certificate = opts.cert or luasec_defaults.cert or nil,
         cafile = opts.cafile or luasec_defaults.cafile or nil,
-        verify = verify and 'peer' or 'none',
-        options = opts.options or luasec_defaults.options or {"all", "no_sslv2", "no_sslv3", "no_tlsv1"}
+        options = opts.options or luasec_defaults.options or nil
       }
 
       local sock, err = ssl.wrap(self.sock, params)
@@ -234,17 +241,41 @@ end
 -- Setting LuaSec defaults
 ---------------------------------------
 
+local function deepcopy(t)
+  if type(t) ~= "table" then
+    return t
+  end
+  local r = {}
+  for k,v in pairs(t) do
+    r[k] = deepcopy(v)
+  end
+  return r
+end
+
+--- Sets the luasec defaults for tls connections. See `get_luasec_defaults`.
+-- The options will be (deep)copied, so safe to reuse the table.
+-- @tparam table defaults The options table with options to set.
 function _M.set_luasec_defaults(defaults)
   if type(defaults) ~= "table" then
     error(string.format(
       "bad argument #1 to 'set_luasec_defaults' (table expected, got %s",
       type(defaults)), 2)
   end
-  luasec_defaults.protocol = defaults.protocol
-  luasec_defaults.key = defaults.key
-  luasec_defaults.cert = defaults.cert
-  luasec_defaults.cafile = defaults.cafile
-  luasec_defaults.options = defaults.options
+  for _, fieldname in ipairs(luasec_defaults._fields) do
+    luasec_defaults[fieldname] = deepcopy(defaults[fieldname])
+  end
+end
+
+--- Returns a copy of the defaults table. The `_fields` meta field lists the
+-- known fields. The options will be (deep)copied, so safe to reuse/modify the table.
+-- @return table with options as currently in use
+function _M.get_luasec_defaults()
+  local defaults = {}
+  for _, fieldname in ipairs(luasec_defaults._fields) do
+    defaults[fieldname] = deepcopy(luasec_defaults[fieldname])
+  end
+  defaults._fields = deepcopy(luasec_defaults._fields)
+  return defaults
 end
 
 
